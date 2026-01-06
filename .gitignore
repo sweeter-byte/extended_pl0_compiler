@@ -1,0 +1,45 @@
+# Build directories
+build/
+bin/
+lib/
+
+# CMake specific
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+Makefile
+*.cbp
+
+# Compiled Object files
+*.o
+*.obj
+*.res
+
+# Static and Dynamic Libraries
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables
+pl0c
+pl0gui
+*.exe
+*.out
+*.app
+
+# IDE configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs and temporary files
+*.log
+trace*.log
+tmp/
