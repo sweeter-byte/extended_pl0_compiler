@@ -1,0 +1,5 @@
+program p; 
+procedure f(x); begin end; 
+begin 
+call f() 
+end

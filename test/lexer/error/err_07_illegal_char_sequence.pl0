@@ -1,0 +1,5 @@
+program illegal_seq;
+var x;
+begin
+  x := @#$!;  // Sequence of illegal chars
+end

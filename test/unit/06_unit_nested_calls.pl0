@@ -1,0 +1,97 @@
+program nestedCalls;
+{ Test nested procedure calls and deep call stacks }
+var depth, maxDepth, result;
+
+procedure level3(x);
+begin
+  result := x * 2;
+  write(result)
+end;
+
+procedure level2(x);
+begin
+  call level3(x + 10)
+end;
+
+procedure level1(x);
+begin
+  call level2(x + 100)
+end;
+
+procedure factorial(n);
+  var temp;
+begin
+  if n <= 1 then
+    result := 1
+  else begin
+    call factorial(n - 1);
+    temp := result;
+    result := n * temp
+  end
+end;
+
+procedure fibonacci(n);
+  var a, b;
+begin
+  if n <= 0 then
+    result := 0
+  else if n = 1 then
+    result := 1
+  else begin
+    call fibonacci(n - 1);
+    a := result;
+    call fibonacci(n - 2);
+    b := result;
+    result := a + b
+  end
+end;
+
+procedure countDown(n);
+begin
+  if n > 0 then begin
+    write(n);
+    call countDown(n - 1)
+  end
+end;
+
+begin
+  { Test nested calls }
+  call level1(5);  { 5 + 100 + 10 = 115, * 2 = 230 }
+  
+  { Test factorial }
+  call factorial(5);
+  write(result);  { 5! = 120 }
+  
+  call factorial(0);
+  write(result);  { 0! = 1 }
+  
+  call factorial(1);
+  write(result);  { 1! = 1 }
+  
+  { Test fibonacci }
+  call fibonacci(0);
+  write(result);  { fib(0) = 0 }
+  
+  call fibonacci(1);
+  write(result);  { fib(1) = 1 }
+  
+  call fibonacci(10);
+  write(result);  { fib(10) = 55 }
+  
+  { Test countdown (tail-like recursion) }
+  call countDown(5)
+end
+{ Expected output:
+230
+120
+1
+1
+0
+1
+55
+5
+4
+3
+2
+1
+}

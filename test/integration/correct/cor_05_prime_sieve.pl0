@@ -1,0 +1,25 @@
+program primeSieve;
+var p[50], i, j;
+begin
+  { Init: 0=Prime, 1=Not }
+  i := 0; while i < 50 do begin p[i] := 0; i := i + 1; end;
+  p[0] := 1; p[1] := 1; { 0, 1 not prime }
+
+  i := 2;
+  while i * i < 50 do begin
+    if p[i] = 0 then begin
+      j := i * i;
+      while j < 50 do begin
+        p[j] := 1;
+        j := j + i;
+      end;
+    end;
+    i := i + 1;
+  end;
+
+  i := 0;
+  while i < 50 do begin
+    if p[i] = 0 then write(i);
+    i := i + 1;
+  end;
+end

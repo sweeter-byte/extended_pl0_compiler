@@ -1,0 +1,93 @@
+program arrayComplex;
+{ Test complex array indexing and expressions }
+var arr[10], i, j, sum, temp;
+
+procedure fillArray();
+  var k;
+begin
+  k := 0;
+  while k < 10 do begin
+    arr[k] := k * k;  { 0, 1, 4, 9, 16, 25, 36, 49, 64, 81 }
+    k := k + 1
+  end
+end;
+
+procedure sumRange(start, finish);
+begin
+  sum := 0;
+  i := start;
+  while i <= finish do begin
+    sum := sum + arr[i];
+    i := i + 1
+  end
+end;
+
+begin
+  call fillArray();
+  
+  { Test basic access }
+  write(arr[0]);   { 0 }
+  write(arr[5]);   { 25 }
+  write(arr[9]);   { 81 }
+  
+  { Test computed index }
+  i := 3;
+  write(arr[i]);         { arr[3] = 9 }
+  write(arr[i + 2]);     { arr[5] = 25 }
+  write(arr[i * 2]);     { arr[6] = 36 }
+  write(arr[i * 2 + 1]); { arr[7] = 49 }
+  
+  { Test array in expressions }
+  temp := arr[2] + arr[3];  { 4 + 9 = 13 }
+  write(temp);
+  
+  temp := arr[4] - arr[1];  { 16 - 1 = 15 }
+  write(temp);
+  
+  temp := arr[3] * arr[2];  { 9 * 4 = 36 }
+  write(temp);
+  
+  { Test array as loop bound }
+  arr[0] := 5;
+  i := 0;
+  while i < arr[0] do begin
+    i := i + 1
+  end;
+  write(i);  { Should be 5 }
+  
+  { Test array swap }
+  arr[0] := 100;
+  arr[1] := 200;
+  temp := arr[0];
+  arr[0] := arr[1];
+  arr[1] := temp;
+  write(arr[0]);  { 200 }
+  write(arr[1]);  { 100 }
+  
+  { Test sum of range }
+  arr[0] := 1; arr[1] := 2; arr[2] := 3; arr[3] := 4; arr[4] := 5;
+  call sumRange(0, 4);
+  write(sum);  { 1+2+3+4+5 = 15 }
+  
+  { Test using array element as index }
+  arr[0] := 3;
+  arr[3] := 999;
+  write(arr[arr[0]])  { arr[arr[0]] = arr[3] = 999 }
+end
+{ Expected output:
+0
+25
+81
+9
+25
+36
+49
+13
+15
+36
+5
+200
+100
+15
+999
+}

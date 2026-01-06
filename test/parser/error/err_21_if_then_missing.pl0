@@ -1,0 +1,5 @@
+program p; 
+var x; 
+begin 
+if x > 0 x := 1 
+end

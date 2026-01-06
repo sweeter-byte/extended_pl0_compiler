@@ -1,0 +1,5 @@
+program divzero; 
+var x;  
+begin 
+    x := 1 / 0; 
+end

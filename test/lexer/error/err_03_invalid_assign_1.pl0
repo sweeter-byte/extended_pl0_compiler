@@ -1,0 +1,5 @@
+program invalid_assign;
+var x;
+begin
+  x : 1;  // Missing = after :
+end

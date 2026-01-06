@@ -1,0 +1,24 @@
+program arraysHeap;
+var arr[5], p, i;
+
+begin
+  // Array Operations
+  arr[0] := 10;
+  arr[1] := 20;
+  i := 2;
+  arr[i] := 30;
+  
+  write(arr[0]); // 10
+  write(arr[1]); // 20
+  write(arr[2]); // 30
+  
+  // Heap Operations
+  new(p, 1);
+  p := 999;
+  write(p); 
+  
+  // Dynamic array simulation
+  new(p, 10); 
+  
+  delete(p);
+end

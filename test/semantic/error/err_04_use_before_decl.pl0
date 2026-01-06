@@ -1,0 +1,6 @@
+program useBeforeDecl;
+begin
+  x := 1; { Error: declared below }
+end;
+var x; 
+begin end

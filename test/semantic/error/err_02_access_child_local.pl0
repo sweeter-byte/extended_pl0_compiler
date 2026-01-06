@@ -1,0 +1,9 @@
+program childAccess;
+procedure parent();
+  procedure child();
+    var locChild;
+  begin locChild := 1 end;
+begin
+  locChild := 2; { Error: locChild is in child }
+end;
+begin call parent() end

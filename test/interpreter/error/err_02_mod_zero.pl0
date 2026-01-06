@@ -1,0 +1,5 @@
+program modzero; 
+var x; 
+begin 
+    x := 1 mod 0; 
+end

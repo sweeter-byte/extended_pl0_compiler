@@ -1,0 +1,4 @@
+program p; 
+var arr[0]; 
+begin 
+end

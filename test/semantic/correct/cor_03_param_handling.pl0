@@ -1,0 +1,13 @@
+program paramHandling;
+var a, b;
+procedure sum(x, y);
+begin
+  write(x + y);
+end;
+begin
+  a := 10;
+  b := 20;
+  call sum(a, b); { Vars }
+  call sum(100, 200); { Literals }
+  call sum(a + 1, b * 2); { Expressions }
+end

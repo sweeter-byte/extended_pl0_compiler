@@ -1,0 +1,5 @@
+program invalidHeap;
+procedure p(); begin end;
+begin
+  new(p, 10); { Error: p is not variable }
+end

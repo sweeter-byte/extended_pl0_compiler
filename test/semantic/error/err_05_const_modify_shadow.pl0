@@ -1,0 +1,10 @@
+program constShadow;
+const x = 10;
+procedure p();
+  var x;
+begin
+  x := 20; { Valid: modifies local var x }
+end;
+begin
+  x := 30; { Error: modifies global const x }
+end

@@ -1,0 +1,78 @@
+program mathEdgeCases;
+{ Test odd, modulo with negative numbers }
+var x, y, dividend, divisor;
+
+begin
+  { Test odd with positive numbers }
+  x := 5;
+  if odd x then write(1) else write(0);  { 5 is odd => 1 }
+  
+  x := 4;
+  if odd x then write(0) else write(1);  { 4 is even => 1 }
+
+  { Test odd with negative numbers }
+  x := -5;
+  if odd x then write(1) else write(0);  { -5 is odd => 1 }
+  
+  x := -4;
+  if odd x then write(0) else write(1);  { -4 is even => 1 }
+
+  { Test odd with zero }
+  x := 0;
+  if odd x then write(0) else write(1);  { 0 is even => 1 }
+
+  { Test modulo with positive numbers }
+  dividend := 17;
+  divisor := 5;
+  x := dividend mod divisor;
+  write(x);  { 17 mod 5 = 2 }
+
+  { Test modulo with negative dividend (C++ semantics) }
+  dividend := 0 - 17;
+  divisor := 5;
+  x := dividend mod divisor;
+  write(x);  { -17 mod 5 = -2 in C++ }
+
+  { Test modulo with negative divisor }
+  dividend := 17;
+  divisor := 0 - 5;
+  x := dividend mod divisor;
+  write(x);  { 17 mod -5 = 2 in C++ }
+
+  { Test modulo both negative }
+  dividend := 0 - 17;
+  divisor := 0 - 5;
+  x := dividend mod divisor;
+  write(x);  { -17 mod -5 = -2 in C++ }
+
+  { Test integer division with negatives }
+  x := (0 - 17) / 5;
+  write(x);  { -17 / 5 = -3 in C++ (truncates toward zero) }
+
+  x := 17 / (0 - 5);
+  write(x);  { 17 / -5 = -3 }
+
+  { Edge: division resulting in zero }
+  x := 3 / 10;
+  write(x);  { 3 / 10 = 0 }
+
+  { Large number arithmetic }
+  x := 1000000;
+  y := x * 2;
+  write(y / 1000000)  { Should be 2 }
+end
+{ Expected output:
+1
+1
+1
+1
+1
+2
+-2
+2
+-2
+-3
+-3
+0
+2
+}

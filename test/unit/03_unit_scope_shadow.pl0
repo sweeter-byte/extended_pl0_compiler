@@ -1,0 +1,79 @@
+program scopeShadowing;
+{ Test variable shadowing across scopes }
+var arr[5], x, result;
+
+procedure testShadow();
+  var arr, i;  { Local 'arr' shadows global array 'arr' }
+begin
+  arr := 999;  { This is the local scalar, not the global array }
+  write(arr);  { Should print 999 }
+  
+  i := 0;
+  while i < 5 do begin
+    { Cannot access global arr[i] here due to shadowing }
+    { Just demonstrate the local is accessible }
+    i := i + 1
+  end
+end;
+
+procedure testNoShadow();
+  var localVar;
+begin
+  { Access global array directly }
+  write(arr[0]);  { Should print 10 }
+  write(arr[4]);  { Should print 50 }
+  localVar := arr[2];
+  write(localVar)  { Should print 30 }
+end;
+
+procedure nestedShadow();
+  var x;  { Shadows global x }
+  
+  procedure innerProc();
+    var x;  { Shadows outer x }
+  begin
+    x := 333;
+    write(x)  { Should print 333 }
+  end;
+
+begin
+  x := 222;
+  write(x);   { Should print 222 }
+  call innerProc();
+  write(x)    { Should still be 222 }
+end;
+
+begin
+  { Initialize global array }
+  arr[0] := 10;
+  arr[1] := 20;
+  arr[2] := 30;
+  arr[3] := 40;
+  arr[4] := 50;
+  
+  x := 111;
+  write(x);          { Global x = 111 }
+  
+  call testShadow();
+  
+  { Verify global array unchanged }
+  write(arr[0]);     { Should still be 10 }
+  
+  call testNoShadow();
+  
+  call nestedShadow();
+  
+  write(x)           { Global x still 111 }
+end
+{ Expected output:
+111
+999
+10
+10
+50
+30
+222
+333
+222
+111
+}

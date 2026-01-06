@@ -1,0 +1,10 @@
+program relations;
+var x, y;
+begin
+  if x = y then x := 1;
+  if x <> y then x := 1;
+  if x < y then x := 1;
+  if x <= y then x := 1;
+  if x > y then x := 1;
+  if x >= y then x := 1;
+end

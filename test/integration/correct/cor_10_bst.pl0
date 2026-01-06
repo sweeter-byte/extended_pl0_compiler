@@ -1,0 +1,179 @@
+program bstHeap;
+{ Binary Search Tree using heap allocation }
+{ Node structure: mem[ptr]=value, mem[ptr+1]=left, mem[ptr+2]=right }
+{ NIL is represented as 0 }
+const NODESIZE := 3, NIL := 0;
+var mem[100], root, ptr, val, found, nodeVal, leftChild, rightChild, freePtr;
+
+procedure createNode(value);
+  { Creates a new node, returns pointer in 'ptr' global }
+begin
+  if freePtr = 0 then freePtr := 1;
+  ptr := freePtr;
+  freePtr := freePtr + NODESIZE;
+  
+  mem[ptr] := value;       { Value }
+  mem[ptr + 1] := NIL;    { Left child }
+  mem[ptr + 2] := NIL     { Right child }
+end;
+
+procedure insertAt(current, value);
+  var newNode, curVal, left, right;
+begin
+  curVal := mem[current];
+  if value < curVal then begin
+    left := mem[current + 1];
+    if left = NIL then begin
+      call createNode(value);
+      mem[current + 1] := ptr
+    end
+    else
+      call insertAt(left, value)
+  end
+  else if value > curVal then begin
+    right := mem[current + 2];
+    if right = NIL then begin
+      call createNode(value);
+      mem[current + 2] := ptr
+    end
+    else
+      call insertAt(right, value)
+  end
+  { If value = curVal, do nothing (no duplicates) }
+end;
+
+procedure insert(value);
+begin
+  if root = NIL then begin
+    call createNode(value);
+    root := ptr
+  end
+  else
+    call insertAt(root, value)
+end;
+
+procedure inorder(node);
+  var left, right, value;
+begin
+  if node <> NIL then begin
+    left := mem[node + 1];
+    call inorder(left);
+    value := mem[node];
+    write(value);
+    right := mem[node + 2];
+    call inorder(right)
+  end
+end;
+
+procedure search(node, value);
+  var curVal, left, right;
+begin
+  if node = NIL then
+    found := 0
+  else begin
+    curVal := mem[node];
+    if value = curVal then
+      found := 1
+    else if value < curVal then begin
+      left := mem[node + 1];
+      call search(left, value)
+    end
+    else begin
+      right := mem[node + 2];
+      call search(right, value)
+    end
+  end
+end;
+
+procedure preorder(node);
+  var left, right, value;
+begin
+  if node <> NIL then begin
+    value := mem[node];
+    write(value);
+    left := mem[node + 1];
+    call preorder(left);
+    right := mem[node + 2];
+    call preorder(right)
+  end
+end;
+
+procedure countNodes(node);
+  var left, right, leftCount;
+begin
+  if node = NIL then
+    val := 0
+  else begin
+    left := mem[node + 1];
+    call countNodes(left);
+    leftCount := val;
+    right := mem[node + 2];
+    call countNodes(right);
+    val := leftCount + val + 1
+  end
+end;
+
+begin
+  root := NIL;
+  
+  { Insert values: 50, 30, 70, 20, 40, 60, 80 }
+  {        50
+         /    \
+       30      70
+      /  \    /  \
+     20  40  60  80
+  }
+  call insert(50);
+  call insert(30);
+  call insert(70);
+  call insert(20);
+  call insert(40);
+  call insert(60);
+  call insert(80);
+  
+  { Inorder traversal (should print sorted) }
+  write(0);  { Marker: start inorder }
+  call inorder(root);
+  
+  { Preorder traversal }
+  write(0);  { Marker: start preorder }
+  call preorder(root);
+  
+  { Search tests }
+  write(0);  { Marker: start search tests }
+  call search(root, 40);
+  write(found);  { Should be 1 }
+  
+  call search(root, 25);
+  write(found);  { Should be 0 }
+  
+  call search(root, 80);
+  write(found);  { Should be 1 }
+  
+  { Count nodes }
+  call countNodes(root);
+  write(val)  { Should be 7 }
+end
+{ Expected output:
+0
+20
+30
+40
+50
+60
+70
+80
+0
+50
+30
+20
+40
+70
+60
+80
+0
+1
+0
+1
+7
+}

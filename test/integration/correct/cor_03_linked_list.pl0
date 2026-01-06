@@ -1,0 +1,23 @@
+program linkedList;
+var val[10], next[10], head, curr, i, count;
+begin
+  { Initialize free list / nodes }
+  head := 0;
+  curr := 0;
+  count := 0;
+  
+  { Build list 0->1->2->... }
+  while count < 5 do begin
+    val[count] := count * 10;
+    next[count] := count + 1;
+    if count = 4 then next[count] := -1; { End of list }
+    count := count + 1;
+  end;
+
+  { Traverse }
+  curr := head;
+  while curr <> -1 do begin
+    write(val[curr]);
+    curr := next[curr];
+  end;
+end

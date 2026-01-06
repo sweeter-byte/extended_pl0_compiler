@@ -1,0 +1,4 @@
+program unclosed_pascal;
+{ This comment never ends
+begin
+end

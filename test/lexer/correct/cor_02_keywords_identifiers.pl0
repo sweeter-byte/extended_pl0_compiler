@@ -1,0 +1,10 @@
+program keywords;
+const c := 1;
+var v;
+procedure p();
+begin end;
+begin
+  if 1=1 then v := 1 else v := 0;
+  while 0=1 do v := 0;
+  call p();
+end

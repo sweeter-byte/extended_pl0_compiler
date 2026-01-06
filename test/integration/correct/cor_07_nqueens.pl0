@@ -1,0 +1,100 @@
+program nQueens;
+{ N-Queens Problem using backtracking recursion }
+{ Finds all solutions for placing N queens on NxN board }
+const N := 4;
+var board[4], solutions, row, col, safe, i, diff;
+
+procedure printSolution();
+  var c;
+begin
+  solutions := solutions + 1;
+  write(solutions);  { Print solution number }
+  c := 0;
+  while c < N do begin
+    write(board[c]);  { Print queen position in each column }
+    c := c + 1
+  end
+end;
+
+procedure isSafe(checkCol, checkRow);
+  { Check if placing queen at (checkCol, checkRow) is safe }
+  var c, r;
+begin
+  safe := 1;
+  c := 0;
+  while c < checkCol do begin
+    r := board[c];
+    { Same row? }
+    if r = checkRow then safe := 0;
+    { Diagonal check: |row1 - row2| = |col1 - col2| }
+    diff := r - checkRow;
+    if diff < 0 then diff := -diff;
+    if diff = (checkCol - c) then safe := 0;
+    c := c + 1
+  end
+end;
+
+procedure solve(currentCol);
+  var r;
+begin
+  if currentCol = N then begin
+    call printSolution()
+  end
+  else begin
+    r := 0;
+    while r < N do begin
+      call isSafe(currentCol, r);
+      if safe = 1 then begin
+        board[currentCol] := r;
+        call solve(currentCol + 1)
+      end;
+      r := r + 1
+    end
+  end
+end;
+
+begin
+  solutions := 0;
+  call solve(0);
+  write(solutions)  { Total solutions }
+end
+{ Expected output for N=4:
+1
+1
+3
+0
+2
+2
+2
+0
+3
+1
+2
+(blank line represents solution count at end = 2)
+
+Actually the output format is:
+solution_number
+row_of_queen_col0
+row_of_queen_col1
+row_of_queen_col2
+row_of_queen_col3
+...repeated for each solution...
+total_solutions
+
+For N=4, there are 2 solutions:
+Solution 1: queens at rows [1,3,0,2]
+Solution 2: queens at rows [2,0,3,1]
+
+Expected output:
+1
+1
+3
+0
+2
+2
+2
+0
+3
+1
+2
+}

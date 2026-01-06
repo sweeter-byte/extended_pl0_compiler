@@ -1,0 +1,162 @@
+program mathAlgorithms;
+{ Various math algorithms: GCD, LCM, Prime Factorization, Power }
+var result, a, b, temp, factors[20], factorCount, i;
+
+procedure gcd(x, y);
+  { Euclidean algorithm }
+  var t;
+begin
+  while y <> 0 do begin
+    t := y;
+    y := x mod y;
+    x := t
+  end;
+  result := x
+end;
+
+procedure lcm(x, y);
+  var g;
+begin
+  call gcd(x, y);
+  g := result;
+  result := (x / g) * y
+end;
+
+procedure power(base, exp);
+  { Compute base^exp using repeated squaring }
+  var res, b, e;
+begin
+  res := 1;
+  b := base;
+  e := exp;
+  while e > 0 do begin
+    if odd e then
+      res := res * b;
+    b := b * b;
+    e := e / 2
+  end;
+  result := res
+end;
+
+procedure primeFactors(n);
+  { Find prime factors, store in factors array }
+  var d;
+begin
+  factorCount := 0;
+  d := 2;
+  while d * d <= n do begin
+    while n mod d = 0 do begin
+      factors[factorCount] := d;
+      factorCount := factorCount + 1;
+      n := n / d
+    end;
+    d := d + 1
+  end;
+  if n > 1 then begin
+    factors[factorCount] := n;
+    factorCount := factorCount + 1
+  end
+end;
+
+procedure isPrime(n);
+  var d;
+begin
+  if n < 2 then
+    result := 0
+  else if n = 2 then
+    result := 1
+  else if n mod 2 = 0 then
+    result := 0
+  else begin
+    result := 1;
+    d := 3;
+    while d * d <= n do begin
+      if n mod d = 0 then result := 0;
+      d := d + 2
+    end
+  end
+end;
+
+begin
+  { Test GCD }
+  call gcd(48, 18);
+  write(result);  { GCD(48, 18) = 6 }
+  
+  call gcd(101, 103);
+  write(result);  { GCD of two primes = 1 }
+  
+  call gcd(0, 5);
+  write(result);  { GCD(0, 5) = 5 }
+  
+  { Test LCM }
+  call lcm(4, 6);
+  write(result);  { LCM(4, 6) = 12 }
+  
+  call lcm(21, 6);
+  write(result);  { LCM(21, 6) = 42 }
+  
+  { Test Power }
+  call power(2, 10);
+  write(result);  { 2^10 = 1024 }
+  
+  call power(3, 5);
+  write(result);  { 3^5 = 243 }
+  
+  call power(5, 0);
+  write(result);  { 5^0 = 1 }
+  
+  call power(7, 1);
+  write(result);  { 7^1 = 7 }
+  
+  { Test Prime Factors }
+  call primeFactors(60);  { 60 = 2 * 2 * 3 * 5 }
+  write(factorCount);     { 4 factors }
+  i := 0;
+  while i < factorCount do begin
+    write(factors[i]);
+    i := i + 1
+  end;
+  
+  call primeFactors(97);  { 97 is prime }
+  write(factorCount);     { 1 factor }
+  write(factors[0]);      { 97 }
+  
+  { Test isPrime }
+  call isPrime(2);
+  write(result);   { 1 (prime) }
+  
+  call isPrime(17);
+  write(result);   { 1 (prime) }
+  
+  call isPrime(18);
+  write(result);   { 0 (not prime) }
+  
+  call isPrime(1);
+  write(result);   { 0 (1 is not prime) }
+  
+  call isPrime(97);
+  write(result)    { 1 (prime) }
+end
+{ Expected output:
+6
+1
+5
+12
+42
+1024
+243
+1
+7
+4
+2
+2
+3
+5
+1
+97
+1
+1
+0
+0
+1
+}

@@ -1,0 +1,35 @@
+program scopeProcedures;
+var x, f;
+
+procedure setGlobal();
+begin
+  x := 100;
+end;
+
+procedure useLocal();
+var x; // Shadows global x
+begin
+  x := 50;
+  write(x); // Expected: 50
+end;
+
+procedure factorial(n);
+begin
+  if n <= 1 then f := 1
+  else
+  begin
+    call factorial(n - 1);
+    f := n * f;
+  end;
+end;
+
+begin
+  x := 10;
+  call setGlobal();
+  write(x); // Expected: 100
+  call useLocal();
+  write(x); // Expected: 100 (global unchanged)
+  
+  call factorial(5);
+  write(f); // Expected: 120
+end

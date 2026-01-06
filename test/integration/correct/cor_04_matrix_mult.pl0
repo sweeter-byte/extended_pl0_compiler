@@ -1,0 +1,30 @@
+program matMul;
+var A[9], B[9], C[9], i, j, k, r, sum;
+begin
+  { Init A Identity, B Identity }
+  i := 0; while i < 9 do begin A[i] := 0; B[i] := 0; i := i + 1; end;
+  A[0] := 1; A[4] := 1; A[8] := 1;
+  B[0] := 2; B[4] := 2; B[8] := 2;
+
+  { C = A * B }
+  i := 0;
+  while i < 3 do begin
+    j := 0;
+    while j < 3 do begin
+      sum := 0;
+      k := 0;
+      while k < 3 do begin
+        { sum += A[i][k] * B[k][j] }
+        { IDX = row * 3 + col }
+        sum := sum + A[i*3 + k] * B[k*3 + j];
+        k := k + 1;
+      end;
+      C[i*3 + j] := sum;
+      j := j + 1;
+    end;
+    i := i + 1;
+  end;
+
+  i := 0;
+  while i < 9 do begin write(C[i]); i := i + 1; end;
+end

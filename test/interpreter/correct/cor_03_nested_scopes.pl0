@@ -1,0 +1,19 @@
+program nested;
+var x;
+procedure p1();
+  var y;
+  procedure p2();
+  begin
+    x := x + 1; { Access global }
+    y := y + 1; { Access parent local }
+  end;
+  begin
+    y := 10;
+    call p2();
+    write(y); { 11 }
+  end;
+begin
+  x := 100;
+  call p1();
+  write(x); { 101 }
+end

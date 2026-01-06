@@ -1,0 +1,22 @@
+program heapTest;
+var p, q, r;
+begin
+  write(0); { Marker start }
+  
+  { Alloc 10 }
+  new(p, 10);
+  write(p); 
+  
+  { Alloc 5 }
+  new(q, 5);
+  write(q);
+  
+  { Free p }
+  delete(p);
+  
+  { Alloc 10 again - should reuse p }
+  new(r, 10);
+  write(r);
+  
+  if r = p then write(1) else write(0);
+end

@@ -1,0 +1,5 @@
+program indexAbuse;
+var arr[10], b[10];
+begin
+  arr[b] := 1; { Error: b is array, not scalar }
+end

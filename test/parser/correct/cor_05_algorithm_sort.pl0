@@ -1,0 +1,29 @@
+program selectionSort;
+var arr[10], i, j, minIdx, temp;
+
+begin
+  // Initialize array
+  arr[0] := 50; arr[1] := 10; arr[2] := 40; arr[3] := 30; arr[4] := 20;
+  arr[5] := 90; arr[6] := 70; arr[7] := 60; arr[8] := 80; arr[9] := 0;
+
+  // Print unsorted
+  for i := 0 to 9 do write(arr[i]);
+
+  // Selection Sort
+  for i := 0 to 8 do
+  begin
+    minIdx := i;
+    for j := i + 1 to 9 do
+    begin
+      if arr[j] < arr[minIdx] then minIdx := j;
+    end;
+    
+    // Swap
+    temp := arr[minIdx];
+    arr[minIdx] := arr[i];
+    arr[i] := temp;
+  end;
+
+  // Print sorted
+  for i := 0 to 9 do write(arr[i]);
+end

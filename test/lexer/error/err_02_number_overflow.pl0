@@ -1,0 +1,4 @@
+program overflow;
+const MAX = 999999999999999999999999999999;  // Way larger than INT_MAX
+begin
+end

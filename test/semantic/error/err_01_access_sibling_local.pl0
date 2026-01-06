@@ -1,0 +1,9 @@
+program siblingAccess;
+procedure siblingA();
+  var locA;
+begin locA := 1 end;
+procedure siblingB();
+begin
+  locA := 2; { Error: locA is in siblingA }
+end;
+begin call siblingA(); call siblingB() end

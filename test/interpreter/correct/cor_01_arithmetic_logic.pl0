@@ -1,0 +1,12 @@
+program arithmetic;
+var a, b, c;
+begin
+  a := 10; b := 3;
+  c := a + b; write(c); { 13 }
+  c := a - b; write(c); { 7 }
+  c := a * b; write(c); { 30 }
+  c := a / b; write(c); { 3 }
+  c := a mod b; write(c); { 1 }
+  if odd a then write(1) else write(0); { 0 }
+  if a > b then write(1) else write(0); { 1 }
+end

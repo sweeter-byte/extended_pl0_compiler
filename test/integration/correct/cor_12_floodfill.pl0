@@ -1,0 +1,222 @@
+program floodFill;
+{ Flood fill algorithm on a 5x5 grid }
+{ Grid stored as 1D array: grid[y*5 + x] }
+const W := 5, H := 5;
+var grid[25], stack[50], stTop, x, y, idx, oldCol, newCol;
+
+procedure getIdx(gx, gy);
+begin
+  idx := gy * W + gx
+end;
+
+procedure printGrid();
+  var py, px;
+begin
+  py := 0;
+  while py < H do begin
+    px := 0;
+    while px < W do begin
+      call getIdx(px, py);
+      write(grid[idx]);
+      px := px + 1
+    end;
+    py := py + 1
+  end
+end;
+
+procedure push(px, py);
+begin
+  stack[stTop] := px;
+  stTop := stTop + 1;
+  stack[stTop] := py;
+  stTop := stTop + 1
+end;
+
+procedure pop();
+begin
+  stTop := stTop - 1;
+  y := stack[stTop];
+  stTop := stTop - 1;
+  x := stack[stTop]
+end;
+
+procedure fill(sx, sy, fillCol);
+  var curX, curY, cidx, curCol;
+begin
+  call getIdx(sx, sy);
+  oldCol := grid[idx];
+  
+  if oldCol = fillCol then begin
+    { Nothing to do }
+  end
+  else begin
+    stTop := 0;
+    call push(sx, sy);
+    
+    while stTop > 0 do begin
+      call pop();
+      curX := x;
+      curY := y;
+      
+      { Check bounds }
+      if curX >= 0 then
+      if curX < W then
+      if curY >= 0 then
+      if curY < H then begin
+        call getIdx(curX, curY);
+        cidx := idx;
+        curCol := grid[cidx];
+        
+        if curCol = oldCol then begin
+          grid[cidx] := fillCol;
+          
+          { Push neighbors }
+          call push(curX + 1, curY);
+          call push(curX - 1, curY);
+          call push(curX, curY + 1);
+          call push(curX, curY - 1)
+        end
+      end
+    end
+  end
+end;
+
+begin
+  { Initialize grid with pattern:
+    0 0 1 0 0
+    0 0 1 0 0
+    1 1 1 1 1
+    0 0 1 0 0
+    0 0 1 0 0
+  }
+  idx := 0;
+  while idx < 25 do begin
+    grid[idx] := 0;
+    idx := idx + 1
+  end;
+  
+  { Set the cross pattern (value 1) }
+  grid[2] := 1; grid[7] := 1;
+  grid[10] := 1; grid[11] := 1; grid[12] := 1; grid[13] := 1; grid[14] := 1;
+  grid[17] := 1; grid[22] := 1;
+  
+  write(0);  { Marker: original grid }
+  call printGrid();
+  
+  { Fill top-left region (0s become 2s) }
+  call fill(0, 0, 2);
+  
+  write(0);  { Marker: after first fill }
+  call printGrid();
+  
+  { Fill bottom-right region (0s become 3s) }
+  call fill(4, 4, 3);
+  
+  write(0);  { Marker: final grid }
+  call printGrid()
+end
+{ Expected output:
+0
+(original grid - 25 values representing 5x5)
+0 0 1 0 0
+0 0 1 0 0
+1 1 1 1 1
+0 0 1 0 0
+0 0 1 0 0
+
+0
+(after filling top-left with 2)
+2 2 1 0 0
+2 2 1 0 0
+1 1 1 1 1
+0 0 1 0 0
+0 0 1 0 0
+
+0
+(after filling bottom-right with 3)
+2 2 1 0 0 
+2 2 1 0 0
+1 1 1 1 1  
+0 0 1 3 3 
+0 0 1 3 3
+
+Full expected output (one number per line):
+0
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+1
+1
+1
+1
+1
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+2
+2
+1
+0
+0
+2
+2
+1
+0
+0
+1
+1
+1
+1
+1
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+2
+2
+1
+0
+0
+2
+2
+1
+0
+0
+1
+1
+1
+1
+1
+0
+0
+1
+3
+3
+0
+0
+1
+3
+3
+}

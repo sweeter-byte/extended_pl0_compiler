@@ -1,0 +1,17 @@
+program optdemo;
+var a, b, c;
+begin
+  a := 2 + 3;      { Optim: LIT 5 }
+  b := a + 0;      { Optim: LIT 0, ADD -> Removed }
+  c := a * 1;      { Optim: LIT 1, MUL -> Removed }
+  write(a);        { 5 }
+  write(b);        { 5 }
+  write(c);        { 5 }
+  
+  if 1 = 0 then    { Optim: LIT 0. JPC -> JMP }
+  begin
+     write(999);   { Dead Code - Removed }
+  end;
+     
+  write(100);
+end

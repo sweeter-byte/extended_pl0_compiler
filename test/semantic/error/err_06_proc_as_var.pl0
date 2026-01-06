@@ -1,0 +1,5 @@
+program procAsVar;
+procedure p(); begin end;
+begin
+  p := 1; { Error: p is a procedure }
+end

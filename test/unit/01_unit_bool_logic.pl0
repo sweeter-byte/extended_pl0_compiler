@@ -1,0 +1,42 @@
+program boolLogic;
+{ Test complex boolean expressions }
+var a, b, c, d, r1, r2, result;
+
+begin
+  a := 1; b := 5; c := 3; d := 7;
+
+  { Test: (a < b) = (c < d) should be 1 = 1 = 1 (true) }
+  { Need to compute comparisons separately since conditions are limited }
+  if a < b then r1 := 1 else r1 := 0;
+  if c < d then r2 := 1 else r2 := 0;
+  if r1 = r2 then write(1) else write(0);
+
+  { Test: (a > b) = (c > d) should be 0 = 0 = 1 (true) }
+  if a > b then r1 := 1 else r1 := 0;
+  if c > d then r2 := 1 else r2 := 0;
+  if r1 = r2 then write(1) else write(0);
+
+  { Test: (a < b) = (c > d) should be 1 = 0 = 0 (false) }
+  if a < b then r1 := 1 else r1 := 0;
+  if c > d then r2 := 1 else r2 := 0;
+  if r1 = r2 then write(0) else write(1);
+
+  { Test with expressions in comparison }
+  { (a + b) < (c + d) => 6 < 10 => true }
+  if a + b < c + d then write(1) else write(0);
+
+  { Test with zero comparisons }
+  result := 0;
+  if a - 1 = result then write(1) else write(0);
+
+  { Test equality with same values }
+  if b >= b then write(1) else write(0)
+end
+{ Expected output:
+1
+1
+1
+1
+1
+1
+}

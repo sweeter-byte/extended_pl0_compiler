@@ -1,0 +1,29 @@
+program expressions;
+var a, b, c, res;
+
+begin
+  a := 10;
+  b := 20;
+  c := 5;
+  
+  // Precedence test
+  // 10 + 20 * 5 = 110, NOT 150
+  res := a + b * c;
+  write(res);
+  
+  // Parentheses in expressions are fine
+  // (10 + 20) * 5 = 150
+  res := (a + b) * c;
+  write(res);
+  
+  // Relational Logic
+  // No parentheses around conditions
+  
+  if a < b then write(1) else write(0); // 1
+  if a > b then write(1) else write(0); // 0
+  if a <> b then write(1) else write(0); // 1 -- changed # to <>
+  
+  // Odd operator
+  if odd a then write(1) else write(0); // 0 -- odd works on expression
+  if odd c then write(1) else write(0); // 1
+end

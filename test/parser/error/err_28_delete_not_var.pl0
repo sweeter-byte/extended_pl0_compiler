@@ -1,0 +1,5 @@
+program p; 
+const c:=1; 
+begin 
+delete(c) 
+end 

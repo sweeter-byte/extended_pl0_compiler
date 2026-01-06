@@ -1,0 +1,5 @@
+program p; 
+var arr[1]; 
+begin 
+arr := 1 
+end

@@ -1,0 +1,14 @@
+program recursion;
+var f;
+procedure fact(n);
+begin
+  if n <= 1 then f := 1
+  else begin
+    call fact(n-1);
+    f := n * f;
+  end;
+end;
+begin
+  call fact(5);
+  write(f); { 120 }
+end

@@ -1,0 +1,16 @@
+program scopeLeak;
+procedure A();
+  var a;
+begin 
+	a:=1 
+end;
+
+procedure B();
+begin
+  a := 2; { Error: a is local to A }
+end;
+
+begin 
+	call A(); 
+	call B() 
+end

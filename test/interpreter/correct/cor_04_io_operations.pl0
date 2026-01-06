@@ -1,0 +1,6 @@
+program io;
+var x;
+begin
+  { Simulated input via pipe would be needed, but we can test write }
+  write(1234);
+end

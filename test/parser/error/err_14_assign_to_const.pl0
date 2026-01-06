@@ -1,0 +1,6 @@
+program p; 
+const c:=1; 
+begin 
+    c := 2
+    //read(c) 
+end

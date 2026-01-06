@@ -1,0 +1,9 @@
+program heap;
+var p, q;
+begin
+  new(p, 10);
+  new(q, 20);
+  delete(p);
+  delete(q);
+  write(1); { Success if no crash }
+end

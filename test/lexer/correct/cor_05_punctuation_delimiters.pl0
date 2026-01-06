@@ -1,0 +1,10 @@
+program punctuation;
+var arr[10], i;
+begin
+  read(i);
+  write(i);
+  arr[0] := i;
+  new(i, 1);
+  delete(i);
+  if odd(i) then i := 0;
+end

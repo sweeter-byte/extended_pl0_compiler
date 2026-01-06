@@ -1,0 +1,29 @@
+program bubbleSort;
+var arr[10], i, j, t;
+begin
+  { Initialize array with reverse data }
+  arr[0] := 10; arr[1] := 1; arr[2] := 9; arr[3] := 2;
+  arr[4] := 8; arr[5] := 3; arr[6] := 7; arr[7] := 4;
+  arr[8] := 6; arr[9] := 5;
+
+  i := 0;
+  while i < 9 do begin
+    j := 0;
+    while j < 9 - i do begin
+      if arr[j] > arr[j+1] then begin
+        t := arr[j];
+        arr[j] := arr[j+1];
+        arr[j+1] := t;
+      end;
+      j := j + 1;
+    end;
+    i := i + 1;
+  end;
+
+  { Verify output }
+  i := 0;
+  while i < 10 do begin
+    write(arr[i]);
+    i := i + 1;
+  end;
+end

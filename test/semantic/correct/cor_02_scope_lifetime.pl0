@@ -1,0 +1,19 @@
+program scopeLifetime;
+var g;
+procedure setLocal();
+  var l;
+begin
+  l := 50;
+  g := l;
+end;
+procedure checkLocal();
+  var l;
+begin
+  l := 10; { Independent of setLocal's l }
+  write(l);
+end;
+begin
+  call setLocal();
+  call checkLocal(); { Should print 10 }
+  write(g); { Should print 50 }
+end

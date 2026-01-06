@@ -1,0 +1,8 @@
+program forwardRef;
+procedure A();
+begin
+  call B(); { Error: B not defined yet }
+end;
+procedure B();
+begin end;
+begin call A() end

@@ -1,0 +1,4 @@
+program utf8_ident;
+var 变量;  // UTF-8 chars are not valid identifiers in strict PL/0
+begin
+end

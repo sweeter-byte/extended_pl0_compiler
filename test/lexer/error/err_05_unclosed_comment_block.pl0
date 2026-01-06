@@ -1,0 +1,4 @@
+program unclosed_block;
+/* This comment never ends
+begin
+end

@@ -1,0 +1,5 @@
+program invalidalloc; 
+var p; 
+begin 
+    new(p, -1); 
+end

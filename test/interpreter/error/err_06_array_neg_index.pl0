@@ -1,0 +1,6 @@
+program arrayTests;
+var a[10];
+begin
+  { Attempt to access negative index - likely a runtime error }
+  a[-1] := 5;
+end

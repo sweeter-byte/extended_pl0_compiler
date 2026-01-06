@@ -1,0 +1,37 @@
+program quickSort;
+var arr[11], i;
+
+procedure qsort(l, r);
+  var i, j, p, t;
+begin
+  write(l); write(r);
+  i := l; j := r;
+  p := arr[(l + r) / 2];
+  while i <= j do begin
+    while arr[i] < p do i := i + 1;
+    while arr[j] > p do j := j - 1;
+    if i <= j then begin
+      t := arr[i]; arr[i] := arr[j]; arr[j] := t;
+      i := i + 1; j := j - 1;
+    end;
+  end;
+  if l < j then call qsort(l, j);
+  if i < r then call qsort(i, r);
+end;
+
+begin
+  { Initialize array with reverse data }
+  arr[0] := 10; arr[1] := 1; arr[2] := 9; arr[3] := 2;
+  arr[4] := 8; arr[5] := 3; arr[6] := 7; arr[7] := 4;
+  arr[8] := 6; arr[9] := 5;
+  arr[10] := 9999; { Sentinel }
+
+  call qsort(0, 9);
+
+  { Verify output }
+  i := 0;
+  while i < 10 do begin
+    write(arr[i]);
+    i := i + 1;
+  end;
+end

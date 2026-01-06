@@ -1,0 +1,41 @@
+program pointers;
+var
+    p: pointer,
+    q: pointer,
+    a[5], 
+    i, x: integer;
+begin
+    { Test 1: Dynamic Allocation }
+    new(p, 10);
+    new(q, 10);
+    
+    write(1111);
+    
+    { Test 2: Pointer Assignment }
+    *p := 100;
+    
+    write(*p);       { Expect 100 }
+    
+    { Test 3: Array Access }
+    a[0] := 10;
+    a[4] := 50;
+    write(a[0]);     { Expect 10 }
+    write(a[4]);     { Expect 50 }
+    
+    { Test 4: Address Of Array Element }
+    p := &a[0];
+    write(*p);       { Expect 10 }
+    
+    q := &a[4];
+    write(*q);       { Expect 50 }
+    
+    { Test 5: Stack Variable Address - using LAD }
+    x := 999;
+    p := &x;
+    write(*p);       { Expect 999 }
+    
+    *p := 888;
+    write(x);        { Expect 888 }
+    
+    write(2222);
+end

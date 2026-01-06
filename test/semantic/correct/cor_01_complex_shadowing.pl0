@@ -1,0 +1,21 @@
+program complexShadowing;
+var x;
+procedure p1();
+  var x; { Shadows global x }
+  procedure p2();
+    var y;
+  begin
+    x := 20; { Access p1.x }
+    y := x + 1;
+    write(y); { 21 }
+  end;
+begin
+  x := 20;
+  call p2();
+  write(x); { 20, local x modified }
+end;
+begin
+  x := 100;
+  call p1();
+  write(x); { 100, global x unchanged }
+end

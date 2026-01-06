@@ -1,0 +1,5 @@
+program heapexhausted;
+var p;
+begin
+  while 1=1 do new(p, 1000);
+end

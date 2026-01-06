@@ -1,0 +1,4 @@
+program p; 
+const = 10; 
+begin 
+end

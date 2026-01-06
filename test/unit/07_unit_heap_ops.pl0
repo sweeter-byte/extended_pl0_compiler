@@ -1,0 +1,84 @@
+program heapOps;
+{ Test heap allocation and pointer operations }
+var mem[50], ptr1, ptr2, ptr3, i;
+
+begin
+  { Allocate first block of 5 }
+  new(ptr1, 5);
+  write(ptr1);  { Should be some heap address }
+  
+  { Initialize first block }
+  i := 0;
+  while i < 5 do begin
+    mem[ptr1 + i] := i * 10;
+    i := i + 1
+  end;
+  
+  { Allocate second block of 3 }
+  new(ptr2, 3);
+  
+  { Initialize second block }
+  mem[ptr2] := 100;
+  mem[ptr2 + 1] := 200;
+  mem[ptr2 + 2] := 300;
+  
+  { Read back first block }
+  write(mem[ptr1]);      { 0 }
+  write(mem[ptr1 + 1]);  { 10 }
+  write(mem[ptr1 + 4]);  { 40 }
+  
+  { Read back second block }
+  write(mem[ptr2]);      { 100 }
+  write(mem[ptr2 + 2]);  { 300 }
+  
+  { Allocate third block }
+  new(ptr3, 2);
+  mem[ptr3] := 999;
+  mem[ptr3 + 1] := 888;
+  
+  { Verify all blocks still accessible }
+  write(mem[ptr1 + 2]);  { 20 }
+  write(mem[ptr2 + 1]);  { 200 }
+  write(mem[ptr3]);      { 999 }
+  
+  { Test linked list-like structure }
+  { Block at ptr1: data=42, next=ptr2 }
+  mem[ptr1] := 42;
+  mem[ptr1 + 1] := ptr2;
+  { Block at ptr2: data=84, next=ptr3 }
+  mem[ptr2] := 84;
+  mem[ptr2 + 1] := ptr3;
+  { Block at ptr3: data=126, next=0 (null) }
+  mem[ptr3] := 126;
+  mem[ptr3 + 1] := 0;
+  
+  { Traverse linked list }
+  i := ptr1;
+  while i <> 0 do begin
+    write(mem[i]);  { Print data }
+    i := mem[i + 1] { Move to next }
+  end;
+  
+  { Delete is simplified in this implementation }
+  { Commenting out to avoid system issues }
+  { delete(ptr3); }
+  { delete(ptr2); }
+  { delete(ptr1); }
+  
+  write(0)  { End marker }
+end
+{ Expected output:
+(heap address - varies)
+0
+10
+40
+100
+300
+20
+200
+999
+42
+84
+126
+0
+}

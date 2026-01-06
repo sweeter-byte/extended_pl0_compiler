@@ -1,0 +1,6 @@
+program typeConf;
+procedure p(); begin end;
+var x;
+begin
+  x := p + 1; { Error: p is proc }
+end

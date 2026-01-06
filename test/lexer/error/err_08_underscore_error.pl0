@@ -1,0 +1,4 @@
+program underscore_error;
+var my_var;  // Underscore is illegal in this PL/0 variant
+begin
+end

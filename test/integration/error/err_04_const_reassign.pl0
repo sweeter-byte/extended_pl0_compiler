@@ -1,0 +1,7 @@
+program constReassign;
+const G = 100;
+procedure p();
+begin
+  G := 20; { Error: G is const }
+end;
+begin call p() end
