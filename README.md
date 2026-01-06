@@ -27,36 +27,44 @@ An advanced compiler and interpreter for the Extended PL/0 language, built with 
 
 ## EBNF Grammar
 
-```ebnf
-program    = "program" ident ";" block EOF 
-block      = [ "const" ident ":=" number { "," ident ":=" number } ";" ]
-             [ "var" var_decl { "," var_decl } ";" ]
-             { "procedure" ident "(" [ params ] ")" ";" block ";" }
-             body 
-body       = "begin" statement { ";" statement } "end" 
-var_decl   = ident [ ":" ( "integer" | "pointer" ) | "[" number "]" ] 
-params     = ident { "," ident } 
-statement  = [ ident [ "[" expression "]" ] ":=" expression
-             | "call" ident "(" [ args ] ")"
-             | "begin" statement { ";" statement } "end"
-             | "if" condition "then" statement [ "else" statement ]
-             | "while" condition "do" statement
-             | "for" ident ":=" expression ( "to" | "downto" ) expression "do" statement
-             | "read" "(" ident { "," ident } ")"
-             | "write" "(" expression { "," expression } ")"
-             | "new" "(" ident "," expression ")"
-             | "delete" "(" ident ")"
-             | "*" expression ":=" expression
-             ] 
-condition  = "odd" expression
-           | expression ( "=" | "#" | "<" | "<=" | ">" | ">=" ) expression 
-expression = [ "+" | "-" ] term { ( "+" | "-" ) term } 
-term       = factor { ( "*" | "/" | "%" ) factor } 
-factor     = ident [ "[" expression "]" ]
-           | number
-           | "(" expression ")"
-           | "*" factor
-           | "&" ident [ "[" expression "]" ] 
+### PL/0 BNF Description (Extended Backus-Naur Form)
+
+```bnf
+<prog> → program <id>; <block>
+<block> → [<condecl>][<vardecl>][<proc>]<body>
+<condecl> → const <const>{, <const>};
+<const> → <id> := <integer>
+<vardecl> → var <vardef>{, <vardef>};
+<vardef> → <id> [ : (integer | pointer) | [ <integer> ] ]
+<proc> → procedure <id>([<id>{, <id>}]); <block>; { <proc> }
+<body> → begin <statement>{; <statement>} end
+<statement> → <id> [ [ <exp> ] ] := <exp>
+            | * <exp> := <exp>
+            | if <lexp> then <statement> [else <statement>]
+            | while <lexp> do <statement>
+            | for <id> := <exp> (to | downto) <exp> do <statement>
+            | call <id>([<exp>{, <exp>}])
+            | <body>
+            | read (<id>{, <id>})
+            | write (<exp>{, <exp>})
+            | new (<id>, <exp>)
+            | delete (<id>)
+<lexp> → <exp> <lop> <exp> | odd <exp>
+<exp> → [+|-]<term>{<aop><term>}
+<term> → <factor>{<mop><factor>}
+<factor> → <id> [ [ <exp> ] ] | <integer> | (<exp>) | & <id> [ [ <exp> ] ] | * <factor>
+<lop> → = | <> | < | <= | > | >=
+<aop> → + | -
+<mop> → * | / | %
+<id> → l{l|d}   (Note: l for letter)
+<integer> → d{d}
+
+Legend:
+<prog>: Program; <block>: Block; <condecl>: Constant Declaration; <const>: Constant; 
+<vardecl>: Variable Declaration; <proc>: Procedure; <body>: Compound Statement; 
+<statement>: Statement; <exp>: Expression; <lexp>: Condition; <term>: Term; 
+<factor>: Factor; <aop>: Additive Operator; <mop>: Multiplicative Operator; 
+<lop>: Relational Operator.
 ```
 
 ## Prerequisites
