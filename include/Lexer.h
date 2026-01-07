@@ -83,19 +83,15 @@ private:
     // Switch to next buffer and load data
     void loadNextBuffer();
     
-    // Data Members 
+    std::string source_;       
+    size_t sourcePtr_;         
     
-    std::string source_;        // Acts as the "file" content
-    size_t sourcePtr_;          // Current "file" read position
-    
-    char buffers_[2][BUFFER_SIZE + 1]; // buffers[0] and buffers[1], +1 for sentinel
-    int currentBufferIdx_;      // 0 or 1
-    
-    char* lexemeBegin_;         // Pointer to start of lexeme in current buffer
-    char* forward_;             // Scan pointer
-    
-    std::string partialLexeme_; // Holds first part of lexeme if it spans buffers
-    bool isEof_;                // flag to indicate real EOF encountered
+    char buffers_[2][BUFFER_SIZE + 1];
+    int currentBufferIdx_;     
+    char* lexemeBegin_;         
+    char* forward_;            
+    std::string partialLexeme_; 
+    bool isEof_;                
     
     int line_;                  
     int column_;               

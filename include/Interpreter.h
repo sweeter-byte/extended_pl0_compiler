@@ -1,6 +1,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <functional>
 #include "Instruction.h"
 #include "SymbolTable.h"
 
@@ -10,7 +11,8 @@ namespace pl0 {
         RUNNING,
         PAUSED,
         HALTED,
-        ERROR
+        ERROR,
+        WAITING_INPUT  // waiting for GUI to provide input
     };
 
     struct StackFrame {
@@ -59,6 +61,25 @@ public:
     // Get error message
     std::string getError() const { return errorMessage_; }
 
+    // I/O Callbacks for GUI integration
+    using OutputCallback = std::function<void(int value)>;
+    using InputCallback = std::function<int()>;  // Synchronous input (for CLI)
+    
+    void setOutputCallback(OutputCallback cb) { outputCb_ = cb; }
+    void setInputCallback(InputCallback cb) { inputCb_ = cb; }
+    
+    // Async input support for GUI (non-blocking)
+    void provideInput(int value);  // GUI calls this when user enters input
+    bool isWaitingForInput() const { return debugState_ == DebugState::WAITING_INPUT; }
+
+    // Runtime stack accessors for GUI visualization
+    int getStackTop() const { return T_; }
+    int getBasePointer() const { return B_; }
+    int getHeapPointer() const { return H_; }
+    const std::vector<int>& getStore() const { return store_; }
+    int getStoreSize() const { return storeSize_; }
+    const SymbolTable* getSymbolTable() const { return symTable_; }
+
 private:
     // Find base address for level difference L
     int base(int L, int B);
@@ -97,6 +118,15 @@ private:
     DebugState debugState_;
     std::set<int> breakpoints_;
     const SymbolTable* symTable_;
+    
+    // I/O Callbacks
+    OutputCallback outputCb_;
+    InputCallback inputCb_;
+    
+    // Pending input state for async GUI input
+    bool waitingForInput_;
+    int pendingInputAddress_;  // Address to store input value
+    bool pendingInputIndirect_;  // Whether it's indirect addressing
 };
 
 } // namespace pl0
