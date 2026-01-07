@@ -4,6 +4,8 @@
 #include <QPlainTextEdit>
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
+#include <QSet>
+#include <QMouseEvent>
 
 class LineNumberArea;
 
@@ -45,6 +47,18 @@ public:
     void clearErrorLine();
     void highlightLine(int line, const QColor& color);
     void clearHighlights();
+    
+    // Breakpoint management
+    void toggleBreakpoint(int line);
+    bool hasBreakpoint(int line) const;
+    QSet<int> getBreakpoints() const { return breakpoints_; }
+    void clearBreakpoints();
+    
+    // Helper for LineNumberArea
+    int lineAtPosition(int y) const;
+
+Q_SIGNALS:
+    void breakpointToggled(int line, bool enabled);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -58,6 +72,7 @@ private:
     QWidget *lineNumberArea;
     PL0Highlighter *highlighter;
     int errorLine_;
+    QSet<int> breakpoints_;  // Lines with breakpoints
 };
 
 // Line Number Area Widget
@@ -73,6 +88,8 @@ protected:
     void paintEvent(QPaintEvent *event) override {
         codeEditor->lineNumberAreaPaintEvent(event);
     }
+    
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     CodeEditor *codeEditor;

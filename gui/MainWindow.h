@@ -11,13 +11,14 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QTimer>
+#include <memory>
+#include <vector>
+#include "../include/Instruction.h"
+#include "../include/SymbolTable.h"
 
-// Forward declarations for compiler components
 namespace pl0 {
     class Lexer;
     class Parser;
-    class SymbolTable;
-    class CodeGenerator;
     class Interpreter;
     class SourceManager;
     class DiagnosticsEngine;
@@ -52,6 +53,8 @@ private Q_SLOTS:
     void zoomIn();
     void zoomOut();
     void resetZoom();
+    
+    void onConsoleInput(const QString& input);  // Handle console input during debug
 
 private:
     void setupUI();
@@ -66,6 +69,8 @@ private:
     void updateSymbolView();
     void updatePCodeView();
     void updateDebugState();
+    void updateVariableWatch();     // Debug: show variables with runtime values
+    void updateStackVisualization(); // Debug: draw stack diagram
     void highlightCurrentPCodeLine(int line);
     void clearVisualizations();
     
@@ -81,12 +86,14 @@ private:
     QTableWidget* pcodeTable_;
     ConsoleWidget* console_;
     
-    // Debug Panel
+    // Debug Panel - Variable Watch and Stack Visualization
     QWidget* debugPanel_;
     QLabel* pcLabel_;
     QLabel* bpLabel_;
     QLabel* spLabel_;
     QTableWidget* stackTable_;
+    QTreeWidget* variableWatch_;   // Variable watch with runtime values
+    QTextEdit* stackDiagram_;      // ASCII art stack visualization
     
     // Splitters
     QSplitter* mainSplitter_;
@@ -112,12 +119,13 @@ private:
     bool isModified_;
     bool isDebugging_;
     int currentDebugLine_;
+    std::unique_ptr<pl0::Interpreter> interpreter_;
     
-    // Font settings
     int baseFontSize_;
     int currentFontSize_;
     
-    // Compiler data (stored after compilation)
+    std::vector<pl0::Instruction> rawInstructions_;
+    pl0::SymbolTable symTable_;
     std::vector<std::tuple<QString, QString, int, int>> tokens_;  // type, value, line, column
     std::vector<std::tuple<int, QString, int, int>> pcode_;  // addr, op, l, a
     QString astOutput_;  // AST dump output

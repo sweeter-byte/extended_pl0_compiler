@@ -103,6 +103,52 @@ void MainWindow::setupUI() {
     pcodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     rightPanel_->addTab(pcodeTable_, "P-Code");
     
+    // Debug tab - Variable Watch and Stack Visualization
+    QWidget* debugTab = new QWidget(this);
+    QVBoxLayout* debugLayout = new QVBoxLayout(debugTab);
+    debugLayout->setContentsMargins(4, 4, 4, 4);
+    debugLayout->setSpacing(8);
+    
+    // Register info labels
+    QHBoxLayout* regLayout = new QHBoxLayout();
+    pcLabel_ = new QLabel("PC: -", this);
+    bpLabel_ = new QLabel("BP: -", this);
+    spLabel_ = new QLabel("SP: -", this);
+    pcLabel_->setStyleSheet("font-family: monospace; font-weight: bold; color: #4FC3F7;");
+    bpLabel_->setStyleSheet("font-family: monospace; font-weight: bold; color: #81C784;");
+    spLabel_->setStyleSheet("font-family: monospace; font-weight: bold; color: #FFB74D;");
+    regLayout->addWidget(pcLabel_);
+    regLayout->addWidget(bpLabel_);
+    regLayout->addWidget(spLabel_);
+    regLayout->addStretch();
+    debugLayout->addLayout(regLayout);
+    
+    // Variable Watch Tree
+    QLabel* varLabel = new QLabel("Variables", this);
+    varLabel->setStyleSheet("font-weight: bold; color: #CE93D8;");
+    debugLayout->addWidget(varLabel);
+    
+    variableWatch_ = new QTreeWidget(this);
+    variableWatch_->setColumnCount(4);
+    variableWatch_->setHeaderLabels({"Name", "Type", "Address", "Value"});
+    variableWatch_->header()->setStretchLastSection(true);
+    variableWatch_->setAlternatingRowColors(true);
+    variableWatch_->setMaximumHeight(200);
+    debugLayout->addWidget(variableWatch_);
+    
+    // Stack Diagram
+    QLabel* stackLabel = new QLabel("Runtime Stack", this);
+    stackLabel->setStyleSheet("font-weight: bold; color: #FFB74D;");
+    debugLayout->addWidget(stackLabel);
+    
+    stackDiagram_ = new QTextEdit(this);
+    stackDiagram_->setReadOnly(true);
+    stackDiagram_->setFont(QFont("Monospace", 10));
+    stackDiagram_->setStyleSheet("background-color: #1E1E1E; color: #D4D4D4; border: 1px solid #333;");
+    debugLayout->addWidget(stackDiagram_);
+    
+    rightPanel_->addTab(debugTab, "Debug");
+    
     mainSplitter_->addWidget(codeEditor_);
     mainSplitter_->addWidget(rightPanel_);
     mainSplitter_->setStretchFactor(0, 3);  // Code editor takes 60%
@@ -214,7 +260,12 @@ void MainWindow::setupToolBar() {
     toolBar->addAction(compileAction_);
     toolBar->addAction(runAction_);
     toolBar->addSeparator();
+    
+    // Debug controls - all visible
     toolBar->addAction(debugAction_);
+    toolBar->addAction(stepAction_);
+    toolBar->addAction(continueAction_);
+    toolBar->addAction(stopAction_);
 }
 
 void MainWindow::setupStatusBar() {
@@ -237,6 +288,21 @@ void MainWindow::connectSignals() {
     connect(stepAction_, &QAction::triggered, this, &MainWindow::stepDebug);
     connect(continueAction_, &QAction::triggered, this, &MainWindow::continueDebug);
     connect(stopAction_, &QAction::triggered, this, &MainWindow::stopDebug);
+    
+    // Console input (for debug mode)
+    connect(console_, &ConsoleWidget::inputSubmitted, this, &MainWindow::onConsoleInput);
+    
+    // Breakpoint handling
+    connect(codeEditor_, &CodeEditor::breakpointToggled, this, [this](int line, bool enabled) {
+        if (interpreter_) {
+            if (enabled) {
+                interpreter_->setBreakpoint(line);
+            } else {
+                interpreter_->removeBreakpoint(line);
+            }
+        }
+        console_->appendInfo(QString(enabled ? "Breakpoint set at line %1" : "Breakpoint removed from line %1").arg(line));
+    });
     
     // View
     connect(zoomInAction_, &QAction::triggered, this, &MainWindow::zoomIn);
@@ -322,14 +388,12 @@ void MainWindow::saveFileAs() {
     
 }
 
-// ============================================================================
-// Compilation and Execution
-// ============================================================================
 
 void MainWindow::compile() {
     console_->clear();
     clearVisualizations();
     codeEditor_->clearErrorLine();
+    interpreter_.reset();  // Clear existing debug session
     
     // Get source code (UTF-8 encoded)
     QString sourceCode = codeEditor_->toPlainText();
@@ -416,6 +480,10 @@ void MainWindow::compile() {
     } else {
         console_->appendOutput("Compilation successful!");
         statusBar()->showMessage(tr("Compilation successful"),3000);
+        
+        // Store raw instructions and symbol table for debugging/execution
+        rawInstructions_ = codeGen.getCode();
+        symTable_ = symTable;
     }
 }
 
@@ -474,10 +542,6 @@ void MainWindow::run() {
     }
 }
 
-// ============================================================================
-// Visualization Updates
-// ============================================================================
-
 void MainWindow::updateTokenView() {
     tokenTable_->setRowCount(0);
     
@@ -503,8 +567,6 @@ void MainWindow::updateASTView() {
         return;
     }
     
-    // Parse the AST dump output and build tree
-    // The AST dump format is indented with "+ NodeName"
     QStringList lines = astOutput_.split('\n', Qt::SkipEmptyParts);
     
     QTreeWidgetItem* root = nullptr;
@@ -640,33 +702,185 @@ void MainWindow::clearVisualizations() {
     astOutput_.clear();
 }
 
-// ============================================================================
-// Debug Functions (Stubs)
-// ============================================================================
-
 void MainWindow::startDebug() {
-    console_->appendInfo("Debug mode not yet implemented");
+    if (rawInstructions_.empty()) {
+        compile();
+        if (rawInstructions_.empty()) return;
+    }
+
+    console_->appendInfo("=== Starting Debug Session ===");
+    console_->appendInfo("Use F8 to Step, F9 to Continue, Shift+F7 to Stop");
+    console_->appendInfo("Click on line numbers to toggle breakpoints");
+    
+    // Create interpreter for debugging
+    interpreter_ = std::make_unique<pl0::Interpreter>(rawInstructions_);
+    interpreter_->setSymbolTable(&symTable_);
+    interpreter_->setDebugMode(true);
+    
+    // Set output callback to display in console
+    interpreter_->setOutputCallback([this](int value) {
+        console_->appendOutput(QString::number(value));
+    });
+    
+    // Sync existing breakpoints to interpreter
+    for (int line : codeEditor_->getBreakpoints()) {
+        interpreter_->setBreakpoint(line);
+    }
+    
+    interpreter_->start();
+    
+    isDebugging_ = true;
+    currentDebugLine_ = interpreter_->getCurrentLine();
+    
+    // Update UI state
+    debugAction_->setEnabled(false);
+    stepAction_->setEnabled(true);
+    continueAction_->setEnabled(true);
+    stopAction_->setEnabled(true);
+    compileAction_->setEnabled(false);
+    runAction_->setEnabled(false);
+    
+    updateDebugState();
+    console_->appendInfo(QString("Paused at line %1 (PC=%2)").arg(currentDebugLine_).arg(interpreter_->getCurrentPC()));
+    statusBar()->showMessage(tr("Debug session started - F8:Step F9:Continue"), 5000);
 }
 
 void MainWindow::stepDebug() {
-    // To be implemented
+    if (!interpreter_ || !isDebugging_) return;
+    
+    // Check if waiting for input
+    if (interpreter_->isWaitingForInput()) {
+        console_->appendInfo("Waiting for input. Enter a value below:");
+        statusBar()->showMessage(tr("Waiting for input..."));
+        return;
+    }
+    
+    interpreter_->stepOver();
+    updateDebugState();
+    
+    // Check for various states
+    auto state = interpreter_->getDebugState();
+    if (state == pl0::DebugState::HALTED) {
+        console_->appendInfo("Program finished.");
+        stopDebug();
+    } else if (state == pl0::DebugState::WAITING_INPUT) {
+        console_->appendInfo("Program requires input. Enter a value below and press Enter:");
+        statusBar()->showMessage(tr("Waiting for input..."));
+    } else if (interpreter_->hasError()) {
+        console_->appendError(QString::fromStdString(interpreter_->getError()));
+        stopDebug();
+    } else {
+        // Show current line and PC
+        console_->appendInfo(QString("Paused at line %1 (PC=%2)").arg(interpreter_->getCurrentLine()).arg(interpreter_->getCurrentPC()));
+    }
 }
 
 void MainWindow::continueDebug() {
-    // To be implemented
+    if (!interpreter_ || !isDebugging_) return;
+    
+    // Check if waiting for input
+    if (interpreter_->isWaitingForInput()) {
+        console_->appendInfo("Waiting for input. Enter a value below:");
+        statusBar()->showMessage(tr("Waiting for input..."));
+        return;
+    }
+    
+    interpreter_->resume();
+    updateDebugState();
+    
+    auto state = interpreter_->getDebugState();
+    if (state == pl0::DebugState::HALTED) {
+        console_->appendInfo("Program finished.");
+        stopDebug();
+    } else if (state == pl0::DebugState::WAITING_INPUT) {
+        console_->appendInfo("Program requires input. Enter a value below and press Enter:");
+        statusBar()->showMessage(tr("Waiting for input..."));
+    } else if (interpreter_->hasError()) {
+        console_->appendError(QString::fromStdString(interpreter_->getError()));
+        stopDebug();
+    }
 }
 
 void MainWindow::stopDebug() {
-    // To be implemented
+    if (isDebugging_) {
+        console_->appendInfo("Debug session stopped.");
+        isDebugging_ = false;
+        interpreter_.reset();
+        currentDebugLine_ = -1;
+        codeEditor_->clearHighlights();
+        
+        // Update UI state
+        debugAction_->setEnabled(true);
+        stepAction_->setEnabled(false);
+        continueAction_->setEnabled(false);
+        stopAction_->setEnabled(false);
+        compileAction_->setEnabled(true);
+        runAction_->setEnabled(true);
+        
+        statusBar()->showMessage(tr("Debug session stopped"), 3000);
+    }
+}
+
+void MainWindow::onConsoleInput(const QString& input) {
+    // Only handle input if we're debugging and waiting for input
+    if (!isDebugging_ || !interpreter_) return;
+    
+    if (interpreter_->isWaitingForInput()) {
+        bool ok;
+        int value = input.toInt(&ok);
+        
+        if (ok) {
+            interpreter_->provideInput(value);
+            console_->appendInfo(QString("Input received: %1").arg(value));
+            updateDebugState();
+            
+            // After providing input, continue to next step
+            console_->appendInfo(QString("Paused at line %1").arg(interpreter_->getCurrentLine()));
+            statusBar()->showMessage(tr("Input received, ready to continue"), 3000);
+        } else {
+            console_->appendError("Invalid input. Please enter a number.");
+        }
+    }
 }
 
 void MainWindow::updateDebugState() {
-    // To be implemented
+    if (!interpreter_) return;
+    
+    int newLine = interpreter_->getCurrentLine();
+    if (newLine != currentDebugLine_) {
+        currentDebugLine_ = newLine;
+        codeEditor_->clearHighlights();
+        if (currentDebugLine_ > 0) {
+            codeEditor_->highlightLine(currentDebugLine_, QColor("#3E3E3E"));
+            // Scroll to the line if needed
+            QTextCursor cursor(codeEditor_->document()->findBlockByLineNumber(currentDebugLine_ - 1));
+            codeEditor_->setTextCursor(cursor);
+            codeEditor_->ensureCursorVisible();
+        }
+    }
+    
+    // Update visualizations (P-Code highlight)
+    highlightCurrentPCodeLine(interpreter_->getCurrentPC());
+    
+    // Update debug panel with variables and stack
+    updateVariableWatch();
+    updateStackVisualization();
+    
+    // Switch to Debug tab when debugging
+    for (int i = 0; i < rightPanel_->count(); ++i) {
+        if (rightPanel_->tabText(i).contains("Debug")) {
+            rightPanel_->setCurrentIndex(i);
+            break;
+        }
+    }
 }
 
-void MainWindow::highlightCurrentPCodeLine(int line) {
-    // To be implemented
-    Q_UNUSED(line);
+void MainWindow::highlightCurrentPCodeLine(int pc) {
+    pcodeTable_->clearSelection();
+    if (pc >= 0 && pc < pcodeTable_->rowCount()) {
+        pcodeTable_->selectRow(pc);
+        pcodeTable_->scrollToItem(pcodeTable_->item(pc, 0));
+    }
 }
 
 void MainWindow::onCompileFinished() {
@@ -686,10 +900,6 @@ void MainWindow::appendConsoleOutput(const QString& text) {
 void MainWindow::appendConsoleError(const QString& text) {
     console_->appendError(text);
 }
-
-// ============================================================================
-// Font Zoom Functions
-// ============================================================================
 
 void MainWindow::zoomIn() {
     currentFontSize_ += 2;
@@ -727,3 +937,180 @@ void MainWindow::resetZoom() {
     statusBar()->showMessage(tr("Font size reset to %1").arg(currentFontSize_), 2000);
 }
 
+void MainWindow::updateVariableWatch() {
+    variableWatch_->clear();
+    if (!interpreter_) return;
+    
+    const pl0::SymbolTable* symTable = interpreter_->getSymbolTable();
+    if (!symTable) return;
+    
+    const auto& symbols = symTable->getAllSymbols();
+    const auto& store = interpreter_->getStore();
+    int B = interpreter_->getBasePointer();
+    int storeSize = interpreter_->getStoreSize();
+    
+    // Update register labels
+    pcLabel_->setText(QString("PC: %1").arg(interpreter_->getCurrentPC()));
+    bpLabel_->setText(QString("BP: %1").arg(B));
+    spLabel_->setText(QString("SP: %1").arg(interpreter_->getStackTop()));
+    
+    for (const auto& sym : symbols) {
+        if (sym.kind == pl0::SymbolKind::CONSTANT || 
+            sym.kind == pl0::SymbolKind::PROCEDURE) {
+            continue;  // Skip constants and procedures
+        }
+        
+        QTreeWidgetItem* item = new QTreeWidgetItem(variableWatch_);
+        item->setText(0, QString::fromStdString(sym.name));
+        
+        QString typeStr;
+        QString valueStr;
+        int addr = B + sym.address;
+        
+        switch (sym.kind) {
+            case pl0::SymbolKind::VARIABLE:
+                typeStr = "VAR";
+                if (addr >= 0 && addr < storeSize && addr < static_cast<int>(store.size())) {
+                    valueStr = QString::number(store[addr]);
+                } else {
+                    valueStr = "?";
+                }
+                break;
+                
+            case pl0::SymbolKind::ARRAY: {
+                typeStr = QString("ARRAY[%1]").arg(sym.size);
+                QStringList values;
+                for (int i = 0; i < sym.size && i < 20; ++i) {  // Limit to 20 elements
+                    int elemAddr = addr + i;
+                    if (elemAddr >= 0 && elemAddr < storeSize && elemAddr < static_cast<int>(store.size())) {
+                        values << QString::number(store[elemAddr]);
+                    } else {
+                        values << "?";
+                    }
+                }
+                valueStr = "[" + values.join(", ") + "]";
+                if (sym.size > 20) valueStr += "...";
+                
+                // Add child items for each array element
+                for (int i = 0; i < sym.size && i < 20; ++i) {
+                    QTreeWidgetItem* childItem = new QTreeWidgetItem(item);
+                    childItem->setText(0, QString("[%1]").arg(i));
+                    childItem->setText(1, "");
+                    int elemAddr = addr + i;
+                    childItem->setText(2, QString::number(elemAddr));
+                    if (elemAddr >= 0 && elemAddr < storeSize && elemAddr < static_cast<int>(store.size())) {
+                        childItem->setText(3, QString::number(store[elemAddr]));
+                    } else {
+                        childItem->setText(3, "?");
+                    }
+                }
+                break;
+            }
+                
+            case pl0::SymbolKind::POINTER:
+                typeStr = "PTR";
+                if (addr >= 0 && addr < storeSize && addr < static_cast<int>(store.size())) {
+                    int ptrVal = store[addr];
+                    valueStr = QString("→ %1").arg(ptrVal);
+                    // Show dereferenced value
+                    if (ptrVal >= 0 && ptrVal < storeSize && ptrVal < static_cast<int>(store.size())) {
+                        valueStr += QString(" (*=%1)").arg(store[ptrVal]);
+                    }
+                } else {
+                    valueStr = "?";
+                }
+                break;
+                
+            default:
+                typeStr = "?";
+                valueStr = "?";
+        }
+        
+        item->setText(1, typeStr);
+        item->setText(2, QString::number(addr));
+        item->setText(3, valueStr);
+    }
+    
+    variableWatch_->expandAll();
+}
+
+void MainWindow::updateStackVisualization() {
+    if (!interpreter_) {
+        stackDiagram_->clear();
+        return;
+    }
+    
+    const auto& store = interpreter_->getStore();
+    int T = interpreter_->getStackTop();
+    int B = interpreter_->getBasePointer();
+    int H = interpreter_->getHeapPointer();
+    int storeSize = interpreter_->getStoreSize();
+    
+    QString diagram;
+    diagram += "┌─────────────────────────────┐\n";
+    diagram += "│       RUNTIME STACK         │\n";
+    diagram += "├─────────────────────────────┤\n";
+    
+    // Show stack from top to bottom (limited to avoid overflow)
+    int showStart = qMax(0, T - 15);
+    int showEnd = T;
+    
+    for (int i = showEnd; i >= showStart && i >= 0; --i) {
+        QString line;
+        int value = (i < static_cast<int>(store.size())) ? store[i] : 0;
+        
+        // Format the address and value
+        if (i == T) {
+            line = QString("│ [%1] ← TOP: %2").arg(i, 3).arg(value, -10);
+        } else if (i == B) {
+            line = QString("│ [%1] ← BP:  %2  (SL)").arg(i, 3).arg(value, -6);
+        } else if (i == B + 1) {
+            line = QString("│ [%1]       %2  (DL)").arg(i, 3).arg(value, -6);
+        } else if (i == B + 2) {
+            line = QString("│ [%1]       %2  (RA)").arg(i, 3).arg(value, -6);
+        } else {
+            line = QString("│ [%1]       %2").arg(i, 3).arg(value, -10);
+        }
+        
+        // Pad to fixed width
+        while (line.length() < 30) line += " ";
+        line += "│\n";
+        diagram += line;
+    }
+    
+    if (showStart > 0) {
+        diagram += "│          ...               │\n";
+    }
+    
+    diagram += "├─────────────────────────────┤\n";
+    diagram += QString("│ Heap pointer H = %1").arg(H, -11);
+    diagram += " │\n";
+    diagram += QString("│ Store size   = %1").arg(storeSize, -12);
+    diagram += " │\n";
+    diagram += "└─────────────────────────────┘\n";
+    
+    // Show call stack frames
+    auto callStack = interpreter_->getCallStack();
+    if (!callStack.empty()) {
+        diagram += "\n┌─────────────────────────────┐\n";
+        diagram += "│       CALL STACK            │\n";
+        diagram += "├─────────────────────────────┤\n";
+        for (size_t i = 0; i < callStack.size(); ++i) {
+            const auto& frame = callStack[i];
+            diagram += QString("│ Frame %1: B=%2 RA=%3")
+                .arg(i, 2)
+                .arg(frame.baseAddress, 3)
+                .arg(frame.returnAddress, 3);
+            while (diagram.right(1) != "\n") {
+                if (diagram.length() % 31 == 30) {
+                    diagram += "│\n";
+                } else {
+                    diagram += " ";
+                }
+            }
+        }
+        diagram += "└─────────────────────────────┘\n";
+    }
+    
+    stackDiagram_->setPlainText(diagram);
+}

@@ -106,12 +106,12 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent), errorLine_(-1)
     setPalette(p);
 
     // Set monospace font
-    // Use system default fixed-width font (respects user configuration)
+    // Use system default fixed-width font
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     
     // Ensure the size is reasonable if system default is too small/large
-    if (font.pointSize() < 10) {
-        font.setPointSize(13);
+    if (font.pointSize() < 20) {
+        font.setPointSize(28);
     }
     
     setFont(font);
@@ -183,9 +183,19 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
-            QString number = QString::number(blockNumber + 1);
+            int lineNumber = blockNumber + 1;
+            QString number = QString::number(lineNumber);
             
-            if (blockNumber + 1 == errorLine_) {
+            // Draw breakpoint indicator (red circle)
+            if (breakpoints_.contains(lineNumber)) {
+                painter.setBrush(QColor("#E51400"));  // Red
+                painter.setPen(Qt::NoPen);
+                int circleSize = fontMetrics().height() - 4;
+                int circleY = top + (fontMetrics().height() - circleSize) / 2;
+                painter.drawEllipse(3, circleY, circleSize, circleSize);
+            }
+            
+            if (lineNumber == errorLine_) {
                 painter.fillRect(0, top, lineNumberArea->width(), fontMetrics().height(), QColor("#5A1D1D"));
                 painter.setPen(QColor("#FF6B6B"));
             } else {
@@ -234,4 +244,57 @@ void CodeEditor::highlightLine(int line, const QColor& color)
 void CodeEditor::clearHighlights()
 {
     highlightCurrentLine();
+}
+
+// Breakpoint methods
+void CodeEditor::toggleBreakpoint(int line)
+{
+    if (breakpoints_.contains(line)) {
+        breakpoints_.remove(line);
+        Q_EMIT breakpointToggled(line, false);
+    } else {
+        breakpoints_.insert(line);
+        Q_EMIT breakpointToggled(line, true);
+    }
+    lineNumberArea->update();
+}
+
+bool CodeEditor::hasBreakpoint(int line) const
+{
+    return breakpoints_.contains(line);
+}
+
+void CodeEditor::clearBreakpoints()
+{
+    breakpoints_.clear();
+    lineNumberArea->update();
+}
+
+int CodeEditor::lineAtPosition(int y) const
+{
+    QTextBlock block = firstVisibleBlock();
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int bottom = top + qRound(blockBoundingRect(block).height());
+    
+    while (block.isValid()) {
+        if (y >= top && y < bottom) {
+            return block.blockNumber() + 1;
+        }
+        block = block.next();
+        top = bottom;
+        bottom = top + qRound(blockBoundingRect(block).height());
+    }
+    return -1;  // Not found
+}
+
+// LineNumberArea mouse click handler
+void LineNumberArea::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        int lineNumber = codeEditor->lineAtPosition(event->y());
+        if (lineNumber > 0) {
+            codeEditor->toggleBreakpoint(lineNumber);
+        }
+    }
+    QWidget::mousePressEvent(event);
 }
