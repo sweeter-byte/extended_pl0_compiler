@@ -1,5 +1,7 @@
 # Extended PL/0 Compiler
 
+[English](README.md) | [简体中文](README.zh.md)
+
 [![C++17](https://img.shields.io/badge/C++-17-blue.svg?style=flat-square&logo=cplusplus)](https://en.cppreference.com/w/cpp/17)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/Build-CMake-brightgreen.svg?style=flat-square)](https://cmake.org/)
