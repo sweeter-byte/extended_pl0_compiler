@@ -893,32 +893,6 @@ void Parser::parseArrayElementAddress(Symbol& sym) {
         // Restore Index
         emit(OpCode::LOD, 0, currentTempOffset_);
         
-        // Error Handling Block Generation
-        // (Pre-generate jump over error)
-        // Actually, we need to construct the error handling differently to avoid executing it
-        // We need to jump OVER the error block if checks passed.
-        // Wait, current logic was:
-        // if (fail) decode error...
-        // My previous code:
-        // Jump if Fail -> Error Block
-        // But the JPC jumps if FALSE (0).
-        // GEQ returns 1 if true. JPC jumps if 0.
-        // So JPC jumps if Index < 0. Correct.
-        
-        // Backpatching later:
-        // We need to JUMP over the following error generation if we didn't fail?
-        // No, the previous code structure was:
-        // [Check 1] -> JPC(Fail1)
-        // [Check 2] -> JPC(Fail2)
-        // [Restore Index]
-        // [Add Base]
-        // JMP(Success) -> Skip Error
-        // Fail1/Fail2: [Error Code]
-        // Success: ...
-        
-        // Re-implementing correctly:
-        // (Code from before)
-        
         // 3. Compute Absolute Address (HeapAddr + Index)
         emit(OpCode::OPR, 0, static_cast<int>(OprCode::ADD));
         
